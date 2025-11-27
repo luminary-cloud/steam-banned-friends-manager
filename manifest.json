@@ -1,0 +1,31 @@
+{
+  "name": "Steam Banned Friends Manager",
+  "description": "Show banned friends on Steam and manage them easily.",
+  "version": "1.0.1",
+  "icons": {
+    "16": "icons/logo16.png",
+    "48": "icons/logo48.png",
+    "128": "icons/logo128.png"
+  },
+  "host_permissions": [
+    "*://steamcommunity.com/*",
+    "https://api.steampowered.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "css": ["style.css"],
+      "js": ["bans.js"],
+      "run_at": "document_end",
+      "matches": [
+        "*://steamcommunity.com/id/*/friends*",
+        "*://steamcommunity.com/profiles/*/friends*",
+        "*://steamcommunity.com/groups/*/members*"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "manifest_version": 3
+}

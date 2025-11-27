@@ -1,0 +1,98 @@
+.friendbanmanager-bantext {
+  display: block;
+  color: #ff4949;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+  cursor: default;
+}
+.persona.friendbanmanager-banned {
+  position: relative;
+}
+.friendbanmanager-remove-chk {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2000;
+  margin: 0 !important;
+}
+.friendbanmanager-remove-chk:focus {
+  outline: 2px solid #66c0f4;
+}
+.friendbanmanager-btn {
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #fff;
+}
+.friendbanmanager-btn:hover {
+  filter: brightness(1.15);
+}
+.friendbanmanager-btn--toggle {
+  background: #555;
+  border-color: #333;
+}
+.friendbanmanager-btn--vac {
+  background: #d97904;
+}
+.friendbanmanager-btn--game {
+  background: #7c4dff;
+}
+.friendbanmanager-btn--comm {
+  background: #1976d2;
+}
+.friendbanmanager-btn--trade {
+  background: #b38f00;
+}
+.friendbanmanager-btn--all {
+  background: #444;
+}
+.friendbanmanager-btn--danger {
+  background: #b71c1c;
+  border-color: #8a1212;
+}
+.friendbanmanager-btn--danger:hover {
+  background: #d32f2f;
+}
+.friendbanmanager-toolbar {
+  margin: 10px auto;
+  padding: 8px;
+  background: rgba(17, 25, 35, 0.85);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  position: static;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 95%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.friendbanmanager-toolbar .friendbanmanager-btn--toggle {
+  margin-right: 4px;
+}
+.friendbanmanager-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.friendbanmanager-selected-count {
+  margin-left: auto;
+  font-size: 11px;
+  color: #ccc;
+}
+.friendbanmanager-status {
+  margin-left: 12px;
+  min-width: 200px;
+}
