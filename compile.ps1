@@ -19,6 +19,8 @@ function Write-Warn($msg) { Write-Host "[!] $msg" -ForegroundColor Yellow }
 function Write-Info($msg) { Write-Host "[i] $msg" -ForegroundColor Gray }
 
 # Create zip archives using Unix-style forward slashes for entry names (required by AMO)
+# Ensure both Compression and Compression.FileSystem are loaded (ZipArchiveMode is in System.IO.Compression)
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function New-ZipWithUnixPaths {
     param(
@@ -28,9 +30,11 @@ function New-ZipWithUnixPaths {
     if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
     $fileMode = [System.IO.FileMode]::Create
     $fs = [System.IO.File]::Open($ZipPath, $fileMode)
+    $zip = $null
     try {
         $zip = New-Object System.IO.Compression.ZipArchive($fs, [System.IO.Compression.ZipArchiveMode]::Create, $false)
-        $base = (Resolve-Path $SourceDir).Path
+        $baseResolved = Resolve-Path -Path $SourceDir -ErrorAction Stop
+        $base = $baseResolved.Path
         Get-ChildItem -Path $SourceDir -Recurse -File | ForEach-Object {
             $full = $_.FullName
             # Build relative path and strip any leading slashes/backslashes using regex
@@ -42,11 +46,13 @@ function New-ZipWithUnixPaths {
             try {
                 $inStream.CopyTo($outStream)
             } finally {
-                $inStream.Dispose(); $outStream.Dispose()
+                if ($inStream) { $inStream.Dispose() }
+                if ($outStream) { $outStream.Dispose() }
             }
         }
     } finally {
-        $zip.Dispose(); $fs.Dispose()
+        if ($zip) { $zip.Dispose() }
+        if ($fs) { $fs.Dispose() }
     }
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "Steam Banned Friends Manager",
   "description": "Show banned friends on Steam and manage them easily.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "icons": {
     "16": "icons/logo16.png",
     "48": "icons/logo48.png",

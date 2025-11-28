@@ -1,11 +1,13 @@
 const maxRetries = 3;
 let selectionMode = false;
 let sessionID = null;
+let ownSteamID = null;
 const runtime =
   typeof browser !== 'undefined' ? browser.runtime : chrome.runtime;
 
 const extractSessionID = () => {
   if (sessionID) return sessionID;
+  // Try to read from inline scripts first
   const scripts = document.querySelectorAll('script');
   for (const s of scripts) {
     const match = s.text.match(/g_sessionID\s*=\s*"([^"]+)"/);
@@ -14,7 +16,45 @@ const extractSessionID = () => {
       break;
     }
   }
+
+  // Fallback: read sessionid from cookies (Steam sets `sessionid` cookie)
+  if (!sessionID) {
+    try {
+      const cookieStr = document.cookie || '';
+      const m = cookieStr.match(/(?:^|;\s*)sessionid=([^;]+)/);
+      if (m) {
+        // Cookie value may be URL-encoded
+        sessionID = decodeURIComponent(m[1]);
+      }
+    } catch {}
+  }
+
   return sessionID;
+};
+
+const extractOwnSteamID = () => {
+  if (ownSteamID) return ownSteamID;
+  try {
+    // Try global variable if present
+    const scripts = document.querySelectorAll('script');
+    for (const s of scripts) {
+      const m = s.text.match(/g_steamID\s*=\s*"(\d+)"/);
+      if (m) {
+        ownSteamID = m[1];
+        break;
+      }
+    }
+    // Fallback: parse from header/profile link
+    if (!ownSteamID) {
+      const headerLink = document.querySelector(
+        '#global_actions a[href*="/profiles/"]'
+      );
+      const m1 = headerLink?.getAttribute('href')?.match(/\/profiles\/(\d+)/);
+      if (m1) ownSteamID = m1[1];
+    }
+    // If on vanity URL, ownSteamID may not be derivable without API; skip in that case
+  } catch {}
+  return ownSteamID;
 };
 
 const shouldShowToolbar = () => {
@@ -367,6 +407,18 @@ const attachCheckbox = (playerEl) => {
   const chk = document.createElement('input');
   chk.type = 'checkbox';
   chk.className = 'friendbanmanager-remove-chk';
+  // Improve accessibility and avoid form field warnings
+  const sidForName =
+    playerEl?.dataset?.steamid || playerEl?.dataset?.bannedSteamId || '';
+  if (sidForName) {
+    chk.name = `friendbanmanager-remove-${sidForName}`;
+    chk.id = `friendbanmanager-remove-${sidForName}`;
+    chk.value = sidForName;
+    chk.setAttribute('aria-label', `Remove friend ${sidForName}`);
+  } else {
+    chk.name = 'friendbanmanager-remove';
+    chk.setAttribute('aria-label', 'Remove selected friend');
+  }
   chk.addEventListener('change', updateRemoveButtonState);
   playerEl.appendChild(chk);
 };
@@ -388,6 +440,16 @@ const removeSelectedFriends = async (removeBtn) => {
   );
   if (!checked.length) return;
 
+  // Steam only allows removing from your own friends page reliably
+  if (!isFriendsPage()) {
+    const statusSpan = document.getElementById(
+      'friendbanmanager-remove-status'
+    );
+    if (statusSpan)
+      statusSpan.textContent = 'Navigate to your Friends page to remove.';
+    return;
+  }
+
   const confirmMsg = `Are you sure you want to remove ${checked.length} friend${
     checked.length > 1 ? 's' : ''
   } from your friends list?`;
@@ -399,6 +461,10 @@ const removeSelectedFriends = async (removeBtn) => {
   const sid = extractSessionID();
   if (!sid) {
     statusSpan.textContent = 'Could not find sessionID; removal aborted.';
+    console.error(
+      'FriendBanManager: sessionID not found. Cookies:',
+      document.cookie
+    );
     return;
   }
 
@@ -407,24 +473,41 @@ const removeSelectedFriends = async (removeBtn) => {
 
   for (const chk of checked) {
     const persona = chk.closest('.persona');
-    const steamid = persona?.dataset?.steamid;
+    // Try multiple sources for steamid
+    let steamid = persona?.dataset?.steamid || persona?.dataset?.bannedSteamId;
+    if (!steamid) {
+      const link = persona?.querySelector?.('a[href*="/profiles/"]');
+      const m = link?.getAttribute('href')?.match(/\/profiles\/(\d+)/);
+      if (m) steamid = m[1];
+    }
     if (!steamid) {
       fail++;
       continue;
     }
 
     try {
-      const resp = await fetch(
-        'https://steamcommunity.com/actions/RemoveFriendAjax',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          },
-          body: new URLSearchParams({ steamid, sessionid: sid }),
-          credentials: 'include',
-        }
-      );
+      const me = extractOwnSteamID();
+      const basePath = location.pathname.replace(/\/friends.*$/, '');
+      const actionUrl = `${location.origin}${basePath}/friends/action`;
+      const params = new URLSearchParams({
+        sessionid: sid,
+        steamid: me || '',
+        ajax: '1',
+        action: 'remove',
+      });
+      params.append('steamids[]', steamid);
+      const resp = await fetch(actionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+          Accept: 'application/json, text/javascript, */*; q=0.01',
+          Referer: location.href,
+          Origin: 'https://steamcommunity.com',
+        },
+        body: params.toString(),
+        credentials: 'include',
+      });
 
       if (resp.ok) {
         success++;
@@ -432,12 +515,30 @@ const removeSelectedFriends = async (removeBtn) => {
         chk.disabled = true;
       } else {
         fail++;
+        const text = await resp.text().catch(() => '');
+        if (text.trim() === 'false' && statusSpan) {
+          statusSpan.textContent =
+            'Steam refused removal (server returned false). Try reloading your friends page.';
+        }
+        console.error('FriendBanManager: RemoveFriendAjax failed', {
+          status: resp.status,
+          statusText: resp.statusText,
+          body: text,
+          steamid,
+        });
       }
-    } catch {
+    } catch (e) {
       fail++;
+      console.error('FriendBanManager: request error while removing friend', e);
     }
   }
 
   statusSpan.textContent = `Done. Removed ${success}. Failed ${fail}.`;
   updateRemoveButtonState();
+  // If removals occurred, reload the page to reflect updated list
+  if (success > 0) {
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+  }
 };
