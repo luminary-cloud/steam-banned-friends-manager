@@ -1,0 +1,152 @@
+.friendbanmanager-toolbar {
+  margin: 10px auto;
+  padding: 8px;
+  background: rgba(17, 25, 35, 0.85);
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  position: static;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.friendbanmanager-btn-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+
+.friendbanmanager-btn {
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: #fff;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.friendbanmanager-btn:hover {
+  filter: brightness(1.15);
+}
+
+.friendbanmanager-btn:focus,
+.friendbanmanager-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.75);
+}
+
+.friendbanmanager-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.friendbanmanager-btn--toggle {
+  background: #555;
+  border-color: #333;
+  white-space: nowrap;
+}
+
+.friendbanmanager-btn--vac {
+  background: #d97904;
+}
+
+.friendbanmanager-btn--game {
+  background: #7c4dff;
+}
+
+.friendbanmanager-btn--comm {
+  background: #1976d2;
+}
+
+.friendbanmanager-btn--trade {
+  background: #b38f00;
+}
+
+.friendbanmanager-btn--private {
+  background: #6a5acd;
+  border-color: #5a4abc;
+}
+
+.friendbanmanager-btn--all {
+  background: #444;
+}
+
+.friendbanmanager-btn--danger {
+  background: #b71c1c;
+  border-color: #8a1212;
+}
+
+.friendbanmanager-btn--danger:hover {
+  background: #d32f2f;
+}
+
+.friendbanmanager-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.friendbanmanager-selected-count {
+  font-size: 11px;
+  color: #ccc;
+  white-space: nowrap;
+  min-width: 12ch;
+}
+
+.friendbanmanager-status {
+  margin-left: 12px;
+  min-width: 175px;
+  white-space: nowrap;
+}
+
+.friendbanmanager-progress {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #8f98a0;
+  white-space: nowrap;
+}
+
+.friendbanmanager-bantext {
+  display: block;
+  color: #ff4949;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+  cursor: default;
+}
+
+.persona.friendbanmanager-banned {
+  position: relative;
+}
+
+.friendbanmanager-remove-chk {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2000;
+  margin: 0 !important;
+}
+
+.friendbanmanager-remove-chk:focus {
+  outline: 2px solid #66c0f4;
+}
